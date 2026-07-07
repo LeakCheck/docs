@@ -16,10 +16,6 @@
   "navbar": {
     "links": [
       {
-        "label": "Knowledge base",
-        "href": "https://wiki.leakcheck.io"
-      },
-      {
         "label": "Dashboard",
         "href": "https://leakcheck.io"
       }
