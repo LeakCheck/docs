@@ -1,0 +1,117 @@
+---
+title: Python wrapper
+description: Official Python package for the LeakCheck API — supports both the Pro API v2 and the Public API.
+---
+
+The official Python wrapper lets you interact with the LeakCheck API from
+your code. It supports both the private (authenticated) **Pro API v2** and
+the public (unauthenticated) API, and ships with a [CLI tool](/tools/cli).
+
+Source code: [github.com/LeakCheck/leakcheck-api](https://github.com/LeakCheck/leakcheck-api) · MIT license.
+
+## Features
+
+- Lookup email addresses, usernames, and other identifiers against leaked databases.
+- Supports both the **Pro API v2** (authenticated via API key) and the **Public API**.
+- HTTP/SOCKS proxy support.
+- Customizable request limits and offsets for paginated queries.
+
+## Installation
+
+```bash
+pip install leakcheck
+```
+
+## Pro API v2 — `LeakCheckAPI_v2`
+
+To use the Pro API, you need an API key from LeakCheck. You can pass the key
+directly or set it via an environment variable.
+
+```python
+from leakcheck import LeakCheckAPI_v2
+
+# Initialize with API key (or set LEAKCHECK_APIKEY in environment variables)
+api = LeakCheckAPI_v2(api_key="your_api_key_here")
+
+# Perform a lookup
+result = api.lookup(query="example@example.com", query_type="email", limit=100)
+
+print(result)
+```
+
+### Environment variables
+
+| Variable           | Purpose                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| `LEAKCHECK_APIKEY` | Your API key for authentication (must be at least 40 characters long). |
+| `LEAKCHECK_PROXY`  | Optional, to route your requests through a proxy.                     |
+
+### Parameters for `lookup()`
+
+<ParamField body="query" type="string" required>
+  The identifier to look up (email, username, etc.).
+</ParamField>
+
+<ParamField body="query_type" type="string">
+  The type of query (e.g. `email`, `username`). Auto-detected if not
+  provided — see [Search types](/pro-api/search-types).
+</ParamField>
+
+<ParamField body="limit" type="integer" default="100">
+  Limit the number of results (maximum 1000).
+</ParamField>
+
+<ParamField body="offset" type="integer" default="0">
+  Offset for the results (maximum 2500).
+</ParamField>
+
+### Error handling
+
+`lookup()` raises a `ValueError` when the API returns an error, which makes
+failures easy to catch and debug:
+
+```python
+try:
+    result = api.lookup(query="example@example.com", query_type="email", limit=100)
+    print(result)
+except ValueError as e:
+    print(f"An error occurred: {str(e)}")
+```
+
+- If the API key is invalid or not provided, an error is raised.
+- The method validates the `limit` and `offset` parameters.
+- Network and request exceptions are handled as well.
+
+The error messages match the [API error table](/errors).
+
+## Public API — `LeakCheckAPI_Public`
+
+The Public API does not require authentication but offers limited access —
+use it for simple email or username source checks:
+
+```python
+from leakcheck import LeakCheckAPI_Public
+
+# Initialize without an API key
+public_api = LeakCheckAPI_Public()
+
+# Perform a public lookup
+result = public_api.lookup(query="example@example.com")
+
+print(result)
+```
+
+`lookup()` takes a single `query` — an email, an email hash, or a username.
+
+## Proxy support
+
+Both wrappers support proxy configurations (HTTP, HTTPS, SOCKS5). Set the
+proxy with `set_proxy()` or via the `LEAKCHECK_PROXY` environment variable:
+
+```python
+# Set proxy for the Pro API
+api.set_proxy("http://proxy.example.com:8080")
+
+# Set proxy for the Public API
+public_api.set_proxy("http://proxy.example.com:8080")
+```

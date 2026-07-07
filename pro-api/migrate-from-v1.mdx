@@ -1,0 +1,23 @@
+---
+title: Migrate from v1
+description: What changed between the legacy API v1 and the Pro API v2.
+---
+
+In v2 we have combined all the data together, so there are no search types
+like `pass_login` or `domain_email` — just use `password` or `domain`.
+
+What else is different:
+
+1. 🚀 **1.5x faster** for regular queries and **3x** for domain queries —
+   expect almost no latency.
+2. 📄 Filled with data compiled from all leaked databases.
+3. 🦠 It's now possible to search the data from info-stealer logs by their
+   origin (`type=origin`).
+4. 🔍 REST-compliant and simplified search — one endpoint,
+   `GET /api/v2/query/{query}`.
+5. 🔓 **No more IP linking.** Hooray!
+
+<Note>
+Authentication also moved to the `X-API-Key` header — see
+[Authentication](/authentication).
+</Note>

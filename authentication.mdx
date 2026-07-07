@@ -1,0 +1,122 @@
+---
+title: Authentication
+description: How to authenticate requests to the LeakCheck Pro API v2.
+---
+
+Every Pro API v2 endpoint requires an API key. The Public API needs no
+authentication.
+
+## Getting an API key
+
+You can obtain your personal API key in your
+[account settings](https://leakcheck.io) on leakcheck.io. Keys are at least
+40 characters long.
+
+## Passing the key
+
+There are two ways to authenticate a request:
+
+1. **Header (recommended)** — send the key in the `X-API-Key` header:
+
+```text
+Accept: application/json
+X-API-Key: 8cb2237d0679ca88db6464eac60da96345513964
+```
+
+2. **Query parameter** — pass it as `?key=`:
+
+```bash
+curl "https://leakcheck.io/api/v2/query/example@example.com?key=$LEAKCHECK_APIKEY"
+```
+
+<Warning>
+Prefer the header: query strings tend to end up in access logs, proxies and
+browser history, so `?key=` is best kept for quick tests and environments
+where setting headers is inconvenient.
+</Warning>
+
+<CodeGroup>
+
+```bash cURL
+curl "https://leakcheck.io/api/v2/query/example@example.com" \
+  -H "Accept: application/json" \
+  -H "X-API-Key: $LEAKCHECK_APIKEY"
+```
+
+```python Python (requests)
+import os
+import requests
+
+response = requests.get(
+    "https://leakcheck.io/api/v2/query/example@example.com",
+    headers={
+        "Accept": "application/json",
+        "X-API-Key": os.environ["LEAKCHECK_APIKEY"],
+    },
+)
+print(response.json())
+```
+
+```javascript Node.js
+const response = await fetch(
+  "https://leakcheck.io/api/v2/query/example@example.com",
+  {
+    headers: {
+      Accept: "application/json",
+      "X-API-Key": process.env.LEAKCHECK_APIKEY,
+    },
+  }
+);
+console.log(await response.json());
+```
+
+```php PHP
+<?php
+$ch = curl_init("https://leakcheck.io/api/v2/query/example@example.com");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Accept: application/json",
+    "X-API-Key: " . getenv("LEAKCHECK_APIKEY"),
+]);
+$result = json_decode(curl_exec($ch), true);
+curl_close($ch);
+print_r($result);
+```
+
+```go Go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+)
+
+func main() {
+	req, _ := http.NewRequest("GET",
+		"https://leakcheck.io/api/v2/query/example@example.com", nil)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-API-Key", os.Getenv("LEAKCHECK_APIKEY"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}
+```
+
+</CodeGroup>
+
+<Tip>
+Keep the key out of your source code — read it from an environment variable
+(the official Python wrapper picks up `LEAKCHECK_APIKEY` automatically).
+</Tip>
+
+Requests without the header are rejected with `401 Missing X-API-Key`, and
+requests with a wrong key with `400 Invalid X-API-Key` — see
+[Errors](/errors) for the full list.

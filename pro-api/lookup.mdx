@@ -1,0 +1,201 @@
+---
+title: Lookup
+description: Query the Pro API v2 for full breach records by email, username, phone, domain and more.
+---
+
+The Pro API v2 has a single lookup endpoint:
+
+```text
+GET https://leakcheck.io/api/v2/query/{query}
+```
+
+Requires an [API key](/authentication) — in the `X-API-Key` header or as a
+`?key=` query parameter.
+
+## Parameters
+
+<ParamField path="query" type="string" required>
+  The value to search for — an email address, username, phone number, hash,
+  domain, etc. Minimum 3 characters.
+</ParamField>
+
+<ParamField query="key" type="string">
+  Your API key, as an alternative to the `X-API-Key` header.
+</ParamField>
+
+<ParamField query="type" type="string">
+  Search type. When omitted, the type is detected automatically (works for
+  email, username, phone number and hash). Other types — such as `domain`,
+  `keyword`, `origin` or `password` — must be set explicitly. See
+  [Search types](/pro-api/search-types) for the full list.
+</ParamField>
+
+<ParamField query="limit" type="integer" default="100">
+  Maximum number of rows to return. Cannot exceed 1000.
+</ParamField>
+
+<ParamField query="offset" type="integer" default="0">
+  Number of rows to skip, for pagination. Cannot exceed 2500.
+</ParamField>
+
+## Sample request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://leakcheck.io/api/v2/query/example@example.com?limit=100" \
+  -H "Accept: application/json" \
+  -H "X-API-Key: $LEAKCHECK_APIKEY"
+```
+
+```python Python (requests)
+import os
+import requests
+
+response = requests.get(
+    "https://leakcheck.io/api/v2/query/example@example.com",
+    params={"type": "email", "limit": 100, "offset": 0},
+    headers={
+        "Accept": "application/json",
+        "X-API-Key": os.environ["LEAKCHECK_APIKEY"],
+    },
+)
+data = response.json()
+print(f"found {data['found']} rows, {data['quota']} queries left")
+```
+
+```python Python (wrapper)
+from leakcheck import LeakCheckAPI_v2
+
+# Reads LEAKCHECK_APIKEY from the environment if api_key is omitted
+api = LeakCheckAPI_v2(api_key="your_api_key_here")
+
+result = api.lookup(query="example@example.com", query_type="email", limit=100)
+print(result)
+```
+
+```javascript Node.js
+const query = encodeURIComponent("example@example.com");
+const response = await fetch(
+  `https://leakcheck.io/api/v2/query/${query}?limit=100`,
+  {
+    headers: {
+      Accept: "application/json",
+      "X-API-Key": process.env.LEAKCHECK_APIKEY,
+    },
+  }
+);
+const data = await response.json();
+console.log(`found ${data.found} rows, ${data.quota} queries left`);
+```
+
+```php PHP
+<?php
+$query = urlencode("example@example.com");
+$ch = curl_init("https://leakcheck.io/api/v2/query/{$query}?limit=100");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Accept: application/json",
+    "X-API-Key: " . getenv("LEAKCHECK_APIKEY"),
+]);
+$data = json_decode(curl_exec($ch), true);
+curl_close($ch);
+echo "found {$data['found']} rows, {$data['quota']} queries left\n";
+```
+
+```go Go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+)
+
+func main() {
+	query := url.PathEscape("example@example.com")
+	req, _ := http.NewRequest("GET",
+		"https://leakcheck.io/api/v2/query/"+query+"?limit=100", nil)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-API-Key", os.Getenv("LEAKCHECK_APIKEY"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var data struct {
+		Success bool             `json:"success"`
+		Found   int              `json:"found"`
+		Quota   int              `json:"quota"`
+		Result  []map[string]any `json:"result"`
+	}
+	json.NewDecoder(resp.Body).Decode(&data)
+	fmt.Printf("found %d rows, %d queries left\n", data.Found, data.Quota)
+}
+```
+
+</CodeGroup>
+
+## Sample response
+
+```json
+{
+    "success": true,
+    "found": 1,
+    "quota": 400,
+    "result": [
+        {
+            "email": "example@example.com",
+            "source": {
+                "name": "BreachedWebsite.net",
+                "breach_date": "2019-07",
+                "unverified": 0,
+                "passwordless": 0,
+                "compilation": 0
+            },
+            "first_name": "Example",
+            "last_name": "Example",
+            "username": "leakcheck",
+            "fields": ["first_name", "last_name", "username"]
+        }
+    ]
+}
+```
+
+Or, if nothing was found:
+
+```json
+{
+    "success": true,
+    "found": 0,
+    "quota": 400,
+    "result": []
+}
+```
+
+## Response fields
+
+<ResponseField name="found" type="integer">
+  Number of rows found and returned.
+</ResponseField>
+
+<ResponseField name="quota" type="integer">
+  The number of queries remaining on your account.
+</ResponseField>
+
+<ResponseField name="result" type="array">
+  Array of associative arrays containing the results of the search. Each row
+  carries a `source` object (breach name, `breach_date`, and `unverified` /
+  `passwordless` / `compilation` flags) plus a `fields` list naming the data
+  present in that row.
+</ResponseField>
+
+<Note>
+Rows can contain various data from breached databases. The list includes but
+is not limited to: `username`, `password`, `first_name`, `last_name`, `dob`,
+`address`, `zip`, `phone`, `name`.
+</Note>

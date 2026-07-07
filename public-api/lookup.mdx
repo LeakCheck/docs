@@ -1,0 +1,166 @@
+---
+title: Lookup
+description: Free breach-source lookups by email, email hash or username — no API key required.
+---
+
+The Public API tells you **where** an identifier was leaked and **what kinds
+of data** were exposed, without revealing the data itself. It requires no
+authentication and is free to use, including for commercial projects.
+
+```text
+GET https://leakcheck.io/api/public?check={query}
+```
+
+<Info>
+The search type is detected automatically.
+</Info>
+
+## Accepted data
+
+| Type           | Sample                     | Notes                              |
+| -------------- | -------------------------- | ---------------------------------- |
+| E-mail         | example@example.com        |                                    |
+| E-mail by hash | 31c5543c1734d25c7206f5fd   | SHA256, truncated to 24 characters |
+| Username       | example                    | min. 3 characters                  |
+
+## Sample request
+
+<CodeGroup>
+
+```bash cURL
+curl "https://leakcheck.io/api/public?check=example@example.com"
+```
+
+```python Python (requests)
+import requests
+
+response = requests.get(
+    "https://leakcheck.io/api/public",
+    params={"check": "example@example.com"},
+)
+data = response.json()
+if data["found"]:
+    for source in data["sources"]:
+        print(f"{source['name']} ({source['date']})")
+```
+
+```python Python (wrapper)
+from leakcheck import LeakCheckAPI_Public
+
+public_api = LeakCheckAPI_Public()
+result = public_api.lookup(query="example@example.com")
+print(result)
+```
+
+```javascript JavaScript
+const response = await fetch(
+  "https://leakcheck.io/api/public?check=" +
+    encodeURIComponent("example@example.com")
+);
+const data = await response.json();
+if (data.found) {
+  for (const source of data.sources) {
+    console.log(`${source.name} (${source.date})`);
+  }
+}
+```
+
+```php PHP
+<?php
+$check = urlencode("example@example.com");
+$data = json_decode(
+    file_get_contents("https://leakcheck.io/api/public?check={$check}"),
+    true
+);
+foreach ($data["sources"] ?? [] as $source) {
+    echo "{$source['name']} ({$source['date']})\n";
+}
+```
+
+```go Go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
+)
+
+func main() {
+	resp, err := http.Get(
+		"https://leakcheck.io/api/public?check=" +
+			url.QueryEscape("example@example.com"))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var data struct {
+		Success bool     `json:"success"`
+		Found   int      `json:"found"`
+		Fields  []string `json:"fields"`
+		Sources []struct {
+			Name string `json:"name"`
+			Date string `json:"date"`
+		} `json:"sources"`
+	}
+	json.NewDecoder(resp.Body).Decode(&data)
+	for _, s := range data.Sources {
+		fmt.Printf("%s (%s)\n", s.Name, s.Date)
+	}
+}
+```
+
+</CodeGroup>
+
+## Sample response
+
+```json
+{
+    "success": true,
+    "found": 3,
+    "fields": ["username", "first_name", "address"],
+    "sources": [
+        {
+            "name": "Evony.com",
+            "date": "2016-07"
+        },
+        {
+            "name": "I-Dressup.com",
+            "date": "2016-08"
+        },
+        {
+            "name": "Zynga.com",
+            "date": "2019-09"
+        }
+    ]
+}
+```
+
+## Response fields
+
+<ResponseField name="found" type="integer">
+  Number of breach records that match the query.
+</ResponseField>
+
+<ResponseField name="fields" type="array">
+  Categories of data exposed across the matching breaches (e.g. `username`,
+  `first_name`, `address`). The values themselves are never returned — use
+  the [Pro API](/pro-api/lookup) for full records.
+</ResponseField>
+
+<ResponseField name="sources" type="array">
+  The breaches the identifier appears in, each with a `name` and a `date`
+  (`YYYY-MM`).
+</ResponseField>
+
+## Rate limit
+
+The Public API is limited to **1 request per second**.
+
+## Terms and conditions
+
+The one and only thing required is to add a small **"Powered by LeakCheck"**
+link if you use the API on your website. The text can vary but should
+include the service name. You can also use affiliate links.

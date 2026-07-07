@@ -1,0 +1,84 @@
+---
+title: Overview
+description: REST API for searching 10B+ leaked records — emails, usernames, phones, domains and info-stealer logs.
+---
+
+The LeakCheck API lets you check whether an identifier — an email address,
+username, phone number, domain or password hash — appears in known data
+breaches and info-stealer logs.
+
+There are two APIs:
+
+- **Pro API v2** — authenticated with an API key. Returns full breach records
+  (including passwords and all leaked fields), supports every search type and
+  pagination. Available on paid plans.
+- **Public API** — no authentication required. Returns only the list of
+  breach sources and the categories of exposed data, never the data itself.
+  Free, including commercial use.
+
+## Pro API vs Public API
+
+|                                  | Pro API v2           | Public API |
+| -------------------------------- | -------------------- | ---------- |
+| Search by e-mail, username       | ✅                   | ✅         |
+| Sources display                  | ✅                   | ✅         |
+| Passwords display                | ✅                   | ❌         |
+| Full data exposure               | ✅                   | ❌         |
+| Allowed RPS                      | 3 (upgradeable)      | 1          |
+| Search by password, domain name  | ✅ (from Enterprise) | ❌         |
+| Pricing                          | from $9.99/mo        | free       |
+
+## Base URLs
+
+```text
+Pro API v2:  https://leakcheck.io/api/v2
+Public API:  https://leakcheck.io/api/public
+```
+
+## Quick start
+
+<CodeGroup>
+
+```bash Pro API v2
+curl "https://leakcheck.io/api/v2/query/example@example.com" \
+  -H "Accept: application/json" \
+  -H "X-API-Key: $LEAKCHECK_APIKEY"
+```
+
+```bash Public API
+curl "https://leakcheck.io/api/public?check=example@example.com"
+```
+
+```python Python (wrapper)
+from leakcheck import LeakCheckAPI_v2
+
+api = LeakCheckAPI_v2(api_key="your_api_key_here")
+result = api.lookup(query="example@example.com")
+print(result)
+```
+
+</CodeGroup>
+
+<CardGroup cols={2}>
+  <Card title="Pro API v2 lookup" icon="magnifying-glass" href="/pro-api/lookup">
+    The main query endpoint: request, response and pagination.
+  </Card>
+  <Card title="Search types" icon="filter" href="/pro-api/search-types">
+    Everything you can search by, from emails to info-stealer origins.
+  </Card>
+  <Card title="Public API" icon="globe" href="/public-api/lookup">
+    Free breach-source lookups without an API key.
+  </Card>
+  <Card title="Python wrapper & CLI" icon="python" href="/tools/python-wrapper">
+    Official `leakcheck` package on PyPI, with a CLI tool included.
+  </Card>
+</CardGroup>
+
+## Commercial usage
+
+You are free to use the Public API for commercial purposes — the only
+requirement is a "Powered by LeakCheck" link on your website (see
+[Public API terms](/public-api/lookup#terms-and-conditions)).
+
+If you wish to use the Pro API commercially, please contact our support team
+at [the@leakcheck.net](mailto:the@leakcheck.net) and describe your project.

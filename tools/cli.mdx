@@ -1,0 +1,59 @@
+---
+title: CLI tool
+description: Query the LeakCheck API straight from your terminal with the leakcheck command.
+---
+
+The [`leakcheck` Python package](/tools/python-wrapper) includes a
+command-line interface for querying the API directly from your terminal.
+
+## Installation
+
+```bash
+pip install leakcheck
+```
+
+## Usage
+
+```bash
+leakcheck "example@example.com" --type email --limit 50 --api-key your_api_key_here
+```
+
+More examples:
+
+```bash
+# Auto-detect the query type, key from LEAKCHECK_APIKEY
+export LEAKCHECK_APIKEY=your_api_key_here
+leakcheck "example@example.com"
+
+# Use the free Public API instead of the authenticated one
+leakcheck "example@example.com" --public
+
+# Domain search with prettified JSON output
+leakcheck "gmail.com" --type domain --pretty
+
+# Route the request through a proxy
+leakcheck "example" --type username --proxy socks5://127.0.0.1:9050
+```
+
+## Help menu
+
+```text
+usage: leakcheck [-h] [--type TYPE] [--limit LIMIT] [--offset OFFSET] [--public] [--api-key API_KEY] [--proxy PROXY] [--pretty] query
+
+LeakCheck CLI Tool
+
+positional arguments:
+  query                 The value to search for (email, username, etc.)
+
+options:
+  -h, --help            show this help message and exit
+  --type TYPE, -t TYPE  Type of query (email, username, etc.). Will be auto-detected if not provided.
+  --limit LIMIT, -l LIMIT
+                        Limit the number of results (max 1000, default 100)
+  --offset OFFSET, -o OFFSET
+                        Offset the results (max 2500, default 0)
+  --public, -p          Use the public API instead of the authenticated API.
+  --api-key API_KEY     API key to authenticate with the LeakCheck service. If not provided, will attempt to read from environment variable.
+  --proxy PROXY         Optional proxy to use for the requests (HTTP, HTTPS, SOCKS5 supported). If not provided, will attempt to read from environment variable.
+  --pretty              Display prettified JSON output instead of a table.
+```

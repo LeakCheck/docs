@@ -1,0 +1,38 @@
+---
+title: Errors & rate limits
+description: Error responses of the LeakCheck API and the request-rate limits that apply.
+---
+
+## Errors
+
+The API reports failures with a standard HTTP status code and an error
+message describing the condition:
+
+| Error                                          | Status code | Notes                                                        |
+| ---------------------------------------------- | ----------- | ------------------------------------------------------------ |
+| Missing X-API-Key header                       | 401         | No API key provided in the request header.                   |
+| Invalid X-API-Key                              | 400         | The API key provided is invalid.                             |
+| Invalid type                                   | 400         | The `type` parameter is not one of the supported values.     |
+| Invalid email                                  | 400         | The email format is incorrect.                               |
+| Invalid query                                  | 400         | The query format is invalid.                                 |
+| Invalid domain                                 | 400         | The domain format is invalid.                                |
+| Too short query (&lt; 3 characters)            | 400         | The query must be at least 3 characters long.                |
+| Invalid characters in query                    | 400         | The query contains characters that are not allowed.          |
+| Too many requests                              | 429         | You have exceeded the rate limit — see below.                |
+| Active plan required                           | 403         | A paid plan is required to make this request.                |
+| Limit reached                                  | 403         | You have reached your plan's usage quota.                    |
+| Could not determine search type automatically  | 422         | Auto-detection failed — pass an explicit `type` parameter.   |
+
+Handle `429` responses by backing off and retrying; treat `403` as a signal
+to check your plan status or remaining quota (the `quota` field of every
+successful response tells you how many queries you have left).
+
+## Rate limits
+
+| API        | Limit                | Notes                                             |
+| ---------- | -------------------- | ------------------------------------------------- |
+| Pro API v2 | 3 requests / second  | Applies to any plan; can be increased in settings. |
+| Public API | 1 request / second   | Fixed.                                            |
+
+By default, the Pro API is limited to 3 requests per second on any plan. You
+can increase this limit in your account settings.
