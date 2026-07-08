@@ -41,6 +41,10 @@
         "pages": ["public-api/lookup"]
       },
       {
+        "group": "API reference",
+        "openapi": "https://leakcheck.io/openapi.json"
+      },
+      {
         "group": "Tools & SDKs",
         "pages": ["tools/python-wrapper", "tools/cli"]
       }
@@ -50,7 +54,7 @@
     "socials": {
       "x": "https://x.com/leakcheck_io",
       "github": "https://github.com/LeakCheck",
-      "discord": "https://discord.com/invite/kgNxXcm",
+      "discord": "https://leakcheck.io/discord",
       "telegram": "https://t.me/leakcheck"
     }
   }
