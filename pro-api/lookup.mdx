@@ -191,7 +191,9 @@ Or, if nothing was found:
   Array of associative arrays containing the results of the search. Each row
   carries a `source` object (breach name, `breach_date`, and `unverified` /
   `passwordless` / `compilation` flags) plus a `fields` list naming the data
-  present in that row.
+  present in that row. Info-stealer log rows additionally carry a `collected`
+  string (an exact `YYYY-MM-DD`, or `"April 2024 or earlier"` for older
+  bulk-imported records) since they have no source `breach_date`.
 </ResponseField>
 
 <Note>
